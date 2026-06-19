@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Account Portal</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>ACCOUNT PORTAL</small></div>
+  <div class="nav"><a>Overview</a><a>Billing</a><a class="cta">Sign out</a></div>
+</div>
+
+<div class="authwrap">
+  <div class="authcard" style="max-width:460px">
+    <span class="eyebrow">my account</span>
+    <h2>Account Settings</h2>
+    <div class="sub">Your access tier is set by your administrator. Guests can't open the dashboard.</div>
+
+    <!-- The server trusts whatever this form posts back. Classic mistake. -->
+    <form id="form" autocomplete="off">
+      <div class="field"><label>Display name</label>
+        <input class="input" name="display" value="recruit" disabled></div>
+
+      <div class="field"><label>Role</label>
+        <select class="input" disabled>
+          <option selected>Guest</option>
+          <option disabled>Admin — restricted</option>
+        </select>
+      </div>
+
+      <!-- this hidden field is what actually gets submitted -->
+      <input type="hidden" id="access_level" name="access_level" value="guest">
+
+      <button class="btn btn-primary btn-block" type="submit">Enter Dashboard</button>
+    </form>
+
+    <div id="out"></div>
+    <div class="notice info" style="margin-top:16px;font-size:12.5px">
+      Current submission payload: <span class="mono" id="echo">access_level=guest</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Account services.</span><span>portal</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(2);
+  var hidden = document.getElementById('access_level');
+  var echo = document.getElementById('echo');
+
+  // keep the on-page echo in sync so the player can SEE the hidden value change
+  new MutationObserver(function(){ echo.textContent = 'access_level=' + hidden.value; })
+    .observe(hidden, {attributes:true, attributeFilter:['value']});
+  // also catch direct .value edits via a light poll
+  setInterval(function(){ echo.textContent = 'access_level=' + hidden.value; }, 500);
+
+  document.getElementById('form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var out = document.getElementById('out');
+    // the server reads the hidden field's CURRENT value — whatever you edited it to
+    if(hidden.value.trim().toLowerCase() === 'admin'){
+      out.innerHTML='';
+      GhostNet.stamp(out, 'Admin dashboard unlocked. The server believed your form.');
+      GhostNet.solve(2);
+    } else {
+      out.innerHTML = '<div class="error">Access denied — your account tier is <b>Guest</b>. Administrator privileges are required to open the dashboard.</div>';
+    }
+  });
+</script>
+</body>
+</html>

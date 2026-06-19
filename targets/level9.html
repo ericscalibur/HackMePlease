@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Support Wall</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>SUPPORT WALL</small></div>
+  <div class="nav"><a>Tickets</a><a>Status</a><a class="cta">New post</a></div>
+</div>
+
+<div class="container">
+  <section class="hero" style="padding:40px 0 28px">
+    <span class="eyebrow">public · support wall</span>
+    <h1>Support <span class="g">Wall</span></h1>
+    <p>Leave a note for the OMNICORP support team. An admin reviews every post that lands on the wall.</p>
+  </section>
+
+  <section class="section" style="padding:0 0 28px">
+    <div class="card" style="max-width:620px">
+      <div class="field"><label>Your message</label>
+        <textarea class="input" id="msg" placeholder="Type your message for support…"></textarea></div>
+      <button class="btn btn-primary" id="post" type="button">Post to wall</button>
+      <div class="notice info" style="margin-top:14px;font-size:12.5px">
+        Share a message with our support team — every post is reviewed by an agent in their browser.
+      </div>
+      <div id="out"></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding:0 0 48px">
+    <h3 style="color:#fff;margin:0 0 12px">Recent posts</h3>
+    <div class="feed" id="wall"></div>
+  </section>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Customer support.</span><span>/wall</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(9);
+
+  var msgEl = document.getElementById('msg');
+  var wall  = document.getElementById('wall');
+  var out   = document.getElementById('out');
+
+  function post(){
+    var raw = msgEl.value;
+    if (!raw) {
+      out.innerHTML = '<div class="error">Write something first, then post it to the wall.</div>';
+      return;
+    }
+
+    // REAL stored-XSS sink: the raw value is injected straight into the DOM.
+    // <img onerror> WILL fire here; <script> tags won't auto-run via innerHTML
+    // (browser behavior) but the pattern check below rewards either attempt.
+    var item = document.createElement('div');
+    item.className = 'post';
+    item.innerHTML = '<div class="who">admin@omnicorp is viewing the wall…</div>' +
+                     '<div class="body">' + raw + '</div>';
+    wall.appendChild(item);
+
+    msgEl.value = '';
+
+    var fired = /<\s*script|onerror\s*=|onload\s*=|on\w+\s*=|<\s*img[^>]*src\s*=|<\s*svg|<\s*iframe|javascript:/i.test(raw);
+
+    if (fired) {
+      out.innerHTML = '';
+      GhostNet.stamp(out, 'Payload fired in admin\'s browser → session cookie exfiltrated. Stored XSS achieved.');
+      GhostNet.solve(9);
+    } else {
+      out.innerHTML = '<div class="notice info">Thanks — your message has been posted to the wall. A support agent will review it shortly.</div>';
+    }
+  }
+
+  document.getElementById('post').addEventListener('click', post);
+</script>
+</body>
+</html>

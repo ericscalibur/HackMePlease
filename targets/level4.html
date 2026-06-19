@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Internal News</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>INTERNAL NEWS</small></div>
+  <div class="nav"><a>Feed</a><a>Directory</a><a class="cta">Staff Login</a></div>
+</div>
+
+<div class="authwrap">
+  <div class="authcard" style="max-width:560px">
+    <span class="eyebrow">portal · /portal</span>
+    <h2>OMNICORP Internal News</h2>
+    <div class="sub">Company updates and the staff console. Your access tier is read from your browser badge on every load.</div>
+
+    <div class="row" style="margin-bottom:16px">
+      <span class="pill">badge: <span class="mono" id="badge">guest</span></span>
+      <span class="spacer"></span>
+      <button class="btn" id="reload" type="button">Reload portal</button>
+    </div>
+
+    <div id="out"></div>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Internal communications.</span><span>portal</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(4);
+
+  // First-time visitors get a default guest badge stored in the browser.
+  if(localStorage.getItem('omnicorp_role') === null){
+    localStorage.setItem('omnicorp_role', 'guest');
+  }
+
+  var out = document.getElementById('out');
+  var badge = document.getElementById('badge');
+
+  function renderPortal(){
+    // Re-read the live value on every render so the session reflects current state.
+    var role = localStorage.getItem('omnicorp_role');
+    badge.textContent = role;
+
+    if(role === 'staff' || role === 'admin'){
+      out.innerHTML = '';
+      var box = document.createElement('div');
+      out.appendChild(box);
+      GhostNet.stamp(box, 'Staff console loaded. Your badge said staff, so the door opened.');
+
+      var console_ = document.createElement('div');
+      console_.className = 'card';
+      console_.style.marginTop = '16px';
+      console_.innerHTML =
+        '<h3>STAFF CONSOLE</h3>' +
+        '<div class="feed" style="margin-top:10px">' +
+          '<div class="post"><div class="who">memo · finance</div><div class="body">Q3 payroll run scheduled 06/28. Approver: K. Okafor.</div></div>' +
+          '<div class="post"><div class="who">memo · facilities</div><div class="body">Sublevel badge readers offline for maintenance Friday 02:00–04:00.</div></div>' +
+          '<div class="post"><div class="who">memo · hr</div><div class="body">Internal salary bands attached. Do not forward outside OMNICORP.</div></div>' +
+        '</div>';
+      out.appendChild(console_);
+
+      GhostNet.solve(4);
+    } else {
+      out.innerHTML =
+        '<div class="feed">' +
+          '<div class="post"><div class="who">omnicorp · press</div><div class="body">OMNICORP posts record quarter; new edge data centers come online.</div></div>' +
+          '<div class="post"><div class="who">omnicorp · culture</div><div class="body">Annual all-hands moves to the new atrium. Public livestream available.</div></div>' +
+        '</div>' +
+        '<div class="notice warn" style="margin-top:14px;font-size:13px">Signed in as <b>'+role+'</b>. Internal news is restricted to staff accounts.</div>';
+    }
+  }
+
+  document.getElementById('reload').addEventListener('click', renderPortal);
+  renderPortal();
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Legacy Admin Console</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>LEGACY ADMIN · UNLISTED</small></div>
+  <div class="nav"><a class="mono muted">/sys-admin-7y2</a></div>
+</div>
+
+<div class="container" style="padding-top:40px">
+  <span class="eyebrow">internal · unprotected</span>
+  <h1 style="font-size:30px;color:#fff;margin:6px 0 14px">Legacy Admin Console</h1>
+  <p class="muted" style="max-width:560px">No login. No link from anywhere. No protection — just a URL nobody was
+  supposed to find. You found it by reading the map the site handed you.</p>
+
+  <div id="out"></div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>System controls</h3>
+    <p>Grid override · user database · billing export · kill-switch. All wide open. This is what "security through
+    obscurity" actually buys you: nothing.</p>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Legacy.</span><span>sys-admin-7y2</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(5);
+  // reaching this hidden page IS the breach
+  GhostNet.stamp(document.getElementById('out'),
+    'Reached the unlisted admin console. robots.txt was a treasure map.');
+  GhostNet.solve(5);
+</script>
+</body>
+</html>

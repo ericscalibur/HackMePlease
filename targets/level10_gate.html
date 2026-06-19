@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Core Maintenance Gate</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>CORE · MAINTENANCE GATE</small></div>
+  <div class="nav"><a>Core</a><a>Audit</a><a class="cta">Abort</a></div>
+</div>
+
+<div class="authwrap">
+  <div class="authcard" style="max-width:460px">
+    <span class="eyebrow">core · maintenance gate</span>
+    <h2>Maintenance Gate</h2>
+    <div class="sub">Final authorization before a root shell is granted on the OMNICORP mainframe. Maintenance identity required.</div>
+
+    <form id="form" autocomplete="off">
+      <div class="field"><label>Maint username</label>
+        <input class="input" id="u" type="text" placeholder="maintenance identity"></div>
+      <div class="field"><label>Auth string</label>
+        <input class="input" id="p" type="text" placeholder="authorization"></div>
+      <button class="btn btn-mag btn-block" type="submit">Breach Core</button>
+    </form>
+
+    <div id="out"></div>
+
+    <div class="notice warn" style="margin-top:16px;font-size:12.5px">
+      Diagnostics: gate query — <span class="mono">SELECT * FROM ops WHERE user='&lt;you&gt;' AND token='&lt;...&gt;'</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Core systems.</span><span>/core/_mtc_8841</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(10);
+
+  // The gate concatenates BOTH fields into the query, so an injection in
+  // either the username OR the auth string can break the WHERE clause —
+  // exactly as a real string-built login would behave.
+  function injects(s){
+    s = (s || '').toLowerCase();
+    return /'\s*or\s*'?\s*1\s*'?\s*=\s*'?\s*1/.test(s)   // ' OR '1'='1
+        || /'\s*or\s*'[^']+'\s*=\s*'[^']+/.test(s)        // ' OR 'a'='a
+        || /'\s*(--|#)/.test(s);                          // ' --   (comment out the rest)
+  }
+
+  document.getElementById('form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var u = document.getElementById('u').value;
+    var p = document.getElementById('p').value;
+    var out = document.getElementById('out');
+
+    var bypass  = injects(u) || injects(p);
+    var hasUser = (u + ' ' + p).toLowerCase().indexOf('root_kx') !== -1;
+
+    if (hasUser && bypass) {
+      out.innerHTML = '';
+      GhostNet.stamp(out, 'CORE BREACHED. root shell on the OMNICORP mainframe. You did it, Ghost.');
+      GhostNet.solve(10);
+    } else if (bypass) {
+      out.innerHTML = '<div class="error">Query bypassed — but this gate also requires a valid maintenance operator name. Whose credentials did the migration leave behind?</div>';
+    } else {
+      out.innerHTML = '<div class="error">Access denied — invalid operator credentials.</div>';
+    }
+  });
+</script>
+</body>
+</html>

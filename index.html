@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHOST//NET — Resistance Training Grid</title>
+<link rel="stylesheet" href="assets/panel.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- LEFT: operator console -->
+  <aside id="panel">
+    <div class="ph">
+      <div class="phtop">
+        <div class="logo" id="logoBtn" title="Return to the grid">GHOST<span class="s">//</span>NET<small>RESISTANCE TRAINING GRID</small></div>
+        <button class="btn sm" id="gridBtn" title="All nodes">▦ grid</button>
+      </div>
+      <div class="statline">
+        <span class="rk" id="rk">SCRIPT KIDDIE</span>
+        <span>· <span id="cn">recruit</span></span>
+        <span class="bar"><i id="progbar"></i></span>
+        <span id="prog">0/10</span>
+      </div>
+    </div>
+    <div class="pbody" id="pbody"></div>
+  </aside>
+
+  <!-- RIGHT: fake browser wrapping a real iframe target -->
+  <main id="stageWrap">
+    <div class="chrome">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="navbtn" id="backBtn" title="Back">‹</div>
+      <div class="navbtn" id="reBtn" title="Reload">⟳</div>
+      <div class="addr"><span class="lockico">🔒</span><input id="addr" spellcheck="false" autocomplete="off"></div>
+      <div class="navbtn" id="goBtn" title="Go">➜</div>
+    </div>
+    <iframe id="frame" title="target" referrerpolicy="no-referrer"></iframe>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+
+<script src="assets/engine.js"></script>
+</body>
+</html>

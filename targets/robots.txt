@@ -1,0 +1,12 @@
+# https://www.omnicorp.net/robots.txt
+# OMNICORP crawler policy
+
+User-agent: *
+Disallow: /tmp/
+Disallow: /assets/
+Disallow: /billing/export/
+Disallow: /sys-admin-7y2/      # legacy admin console - DO NOT INDEX, scheduled for removal
+
+Sitemap: https://www.omnicorp.net/sitemap.xml
+
+# Reminder to self: "do not index" is not the same as "cannot access". -kx

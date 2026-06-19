@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — CRM Login</title>
+<link rel="stylesheet" href="../assets/site.css">
+<!--
+  OMNICORP // CRM LOGIN // /login
+  TODO(legacy): migrate auth to prepared statements — still concatenating for now.
+-->
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>CRM PLATFORM</small></div>
+  <div class="nav"><a>Leads</a><a>Accounts</a><a class="cta">/login</a></div>
+</div>
+
+<div class="authwrap">
+  <div class="authcard" style="max-width:520px">
+    <span class="eyebrow">restricted · crm /login</span>
+    <h2>CRM Sign In</h2>
+    <div class="sub">Sales staff authentication. The backend assembles your query from raw input.</div>
+
+    <form id="form" autocomplete="off">
+      <div class="field"><label>Username</label>
+        <input class="input" id="u" type="text" placeholder="name"></div>
+      <div class="field"><label>Password</label>
+        <input class="input" id="p" type="text" placeholder="password"></div>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+
+    <div class="field" style="margin-top:18px">
+      <label>Live query (what the server will run)</label>
+      <pre class="code" id="q">SELECT * FROM users
+WHERE name='' AND pass=''</pre>
+    </div>
+
+    <div id="out"></div>
+    <div class="notice info" style="margin-top:16px;font-size:12.5px">
+      Debug build: the generated SQL statement is echoed below for diagnostics.
+    </div>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. CRM platform.</span><span>/login</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(7);
+
+  var uEl = document.getElementById('u');
+  var pEl = document.getElementById('p');
+  var qEl = document.getElementById('q');
+
+  function esc(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function renderQuery(){
+    qEl.innerHTML = "SELECT * FROM users\nWHERE name='" + esc(uEl.value) +
+      "' AND pass='" + esc(pEl.value) + "'";
+  }
+  uEl.addEventListener('input', renderQuery);
+  pEl.addEventListener('input', renderQuery);
+
+  function isBypass(u){var s=u.toLowerCase().replace(/\s+/g,' ');
+    return /'\s*or\s*'?\s*\d+\s*'?\s*=\s*'?\s*\d+/.test(s)||/'\s*or\s*'[^']+'\s*=\s*'[^']+/.test(s)||/'\s*or\s*1\s*=\s*1/.test(s);}
+
+  document.getElementById('form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var out = document.getElementById('out');
+    var username = uEl.value;
+    if(isBypass(username)){
+      out.innerHTML = '';
+      GhostNet.stamp(out, 'Query returned 4,210 rows — logged in as admin. You rewrote their question.');
+      GhostNet.solve(7);
+    } else {
+      out.innerHTML = '<div class="error">Login failed — invalid username or password. (0 rows returned)</div>';
+    }
+  });
+</script>
+</body>
+</html>

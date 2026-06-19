@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Maintenance Access</title>
+<link rel="stylesheet" href="../assets/site.css">
+<!--
+  OMNICORP edge node // maintenance login // build 4471
+  TODO(kx): rotate the service passphrase before GA. it's hardcoded below for now.
+-->
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>EDGE SERVICES</small></div>
+  <div class="nav"><a>Status</a><a>Docs</a><a class="cta">Staff Login</a></div>
+</div>
+
+<div class="authwrap">
+  <div class="authcard">
+    <span class="eyebrow">restricted · maintenance</span>
+    <h2>Maintenance Access</h2>
+    <div class="sub">Authorized service personnel only. Enter the maintenance passphrase to open a shell.</div>
+
+    <form id="form" autocomplete="off">
+      <div class="field"><label>Service account</label>
+        <input class="input" value="svc_maint" disabled></div>
+      <div class="field"><label>Passphrase</label>
+        <input class="input" id="pass" type="text" placeholder="enter maintenance passphrase"></div>
+      <button class="btn btn-primary btn-block" type="submit">Authenticate</button>
+    </form>
+
+    <div id="out"></div>
+    <div class="notice info" style="margin-top:18px;font-size:12.5px" class="muted">
+      Tip from IT: if you've lost the passphrase, it's documented in the page build. Don't ask us to reset it again.
+    </div>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Internal systems.</span><span>edge-4471</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(1);
+
+  // FIXME(kx): hardcoded for the 4471 hotfix — move server-side before GA
+  var MAINT_PASSPHRASE = '1123581321';
+
+  function authenticate(input){ return input === MAINT_PASSPHRASE; }
+
+  document.getElementById('form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = document.getElementById('pass').value.trim();
+    var out = document.getElementById('out');
+    if(authenticate(v)){
+      out.innerHTML = '';
+      GhostNet.stamp(out, 'Maintenance shell open. You read the source like a pro.');
+      GhostNet.solve(1);
+    } else {
+      out.innerHTML = '<div class="error">ACCESS DENIED — incorrect maintenance passphrase.</div>';
+    }
+  });
+</script>
+</body>
+</html>

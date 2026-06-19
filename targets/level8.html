@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Session</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>SESSION</small></div>
+  <div class="nav"><a>Profile</a><a>Access</a><a class="cta">Sign out</a></div>
+</div>
+
+<div class="authwrap">
+  <div class="authcard" style="max-width:480px">
+    <span class="eyebrow">restricted · session</span>
+    <h2>Session Verification</h2>
+    <div class="sub">Your access tier is derived from the session token stored in your browser. Admin areas require <span class="mono">role=admin</span>.</div>
+
+    <div class="notice info">
+      Signed in as: <span class="mono" id="who">…</span>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="verify" type="button">Verify session</button>
+
+    <div id="out"></div>
+
+    <div class="notice warn" style="margin-top:16px;font-size:12.5px">
+      Your session token is issued at sign-in and presented with every request to identify your account.
+    </div>
+  </div>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Session services.</span><span>/session</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(8);
+
+  // EXACT starter token — base64 of {"user":"recruit","role":"user","iat":1718000000}
+  var STARTER = 'eyJ1c2VyIjoicmVjcnVpdCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzE4MDAwMDAwfQ==';
+
+  // Always restore the default session on load, so a stale or previously
+  // edited token can never confuse a returning player. To escalate, edit the
+  // token in Local Storage and click "Verify session" — no reload needed.
+  localStorage.setItem('omnicorp_token', STARTER);
+
+  var whoEl = document.getElementById('who');
+  var out   = document.getElementById('out');
+
+  // Decode the LIVE localStorage token. Returns the parsed object or null.
+  function decodeSession(){
+    var token = localStorage.getItem('omnicorp_token'); // always read live value
+    try {
+      var json = atob(token);
+      var obj  = JSON.parse(json);
+      whoEl.textContent = obj.user + ' (' + obj.role + ')';
+      return obj;
+    } catch (e) {
+      whoEl.textContent = '(could not decode token)';
+      return null;
+    }
+  }
+
+  function verify(){
+    var obj = decodeSession();
+    if (obj && obj.role === 'admin') {
+      out.innerHTML = '';
+      GhostNet.stamp(out, 'Token accepted. role=admin. No signature, no problem — for you.');
+      GhostNet.solve(8);
+    } else {
+      var role = obj ? obj.role : 'unknown';
+      out.innerHTML = '<div class="error">Current session role: <b>' + role + '</b>. Administrator access required.</div>';
+    }
+  }
+
+  // Show current identity on load (realistic "show your session").
+  decodeSession();
+
+  document.getElementById('verify').addEventListener('click', verify);
+</script>
+</body>
+</html>
