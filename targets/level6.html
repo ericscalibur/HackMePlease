@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="../assets/site.css">
 <!--
   OMNICORP // CONFIG SERVICE // /db
-  Captured config dump from a misrouted deploy. Credentials are "obfuscated".
 -->
 </head>
 <body>
@@ -18,30 +17,20 @@
 
 <div class="authwrap">
   <div class="authcard" style="max-width:560px">
-    <span class="eyebrow">leaked · /db config</span>
-    <h2>Database Config Dump</h2>
-    <div class="sub">A deploy pipeline exposed this config blob. Operations insists the password is "encrypted." It isn't.</div>
-
-    <pre class="code"># ---- omnicorp.db.conf (captured) ----
-# environment: production
-db_host = pg-prod-01.internal.omnicorp.net
-db_port = 5432
-db_user = omni_app
-# password obfuscated for "security"
-db_pass = Y2pOa2NHbHNiRjh5TURJMg==
-# pool_size = 32
-# ssl_mode  = require
-# ------------------------------------</pre>
+    <span class="eyebrow">restricted · /db</span>
+    <h2>Database Console</h2>
+    <div class="sub">Service credentials are managed by the deploy pipeline and are not displayed here. Enter the current <span class="mono">db_pass</span> to open a connection to production.</div>
 
     <form id="form" autocomplete="off">
-      <div class="field"><label>Recovered db_pass</label>
-        <input class="input" id="ans" type="text" placeholder="recovered db_pass"></div>
-      <button class="btn btn-primary btn-block" type="submit">Submit credential</button>
+      <div class="field"><label>db_pass</label>
+        <input class="input" id="ans" type="text" placeholder="database password"></div>
+      <button class="btn btn-primary btn-block" type="submit">Connect to database</button>
     </form>
 
     <div id="out"></div>
-    <div class="notice info" style="margin-top:16px;font-size:12.5px">
-      Per legacy deployment policy, stored credentials are Base64-encoded rather than encrypted.
+    <div class="notice warn" style="margin-top:16px;font-size:12.5px">
+      ⚠ Deploy note (k.okafor): migration tooling keeps writing environment backups to the web root —
+      e.g. <span class="mono">/.env.backup</span>. These are NOT served to the public in prod. Remember to scrub them before GA.
     </div>
   </div>
 </div>
@@ -52,17 +41,19 @@ db_pass = Y2pOa2NHbHNiRjh5TURJMg==
 <script>
   GhostNet.init(6);
 
-  // The real password is never written in plaintext here — we verify by
-  // decoding the captured blob the same way the player has to.
-  function recover(){ try { return atob(atob('Y2pOa2NHbHNiRjh5TURJMg==')); } catch(e){ return null; } }
+  // The credential is NOT stored on this page — neither in plaintext nor as the
+  // encoded blob. We verify the submitted value against a one-way hash, so the
+  // only place the secret can be recovered is the leaked env backup itself.
+  function h(s){ var x=5381; for(var i=0;i<s.length;i++){ x=((x<<5)+x+s.charCodeAt(i))>>>0; } return x; }
+  var EXPECTED = 2757689928; // djb2 of the recovered db_pass
 
   document.getElementById('form').addEventListener('submit', function(e){
     e.preventDefault();
     var v = document.getElementById('ans').value.trim();
     var out = document.getElementById('out');
-    if(v === recover()){
+    if(h(v) === EXPECTED){
       out.innerHTML = '';
-      GhostNet.stamp(out, 'DB access confirmed. Their "encryption" was a paper bag.');
+      GhostNet.stamp(out, 'Access granted: Database unlocked. Connection to pg-prod-01 established.');
       GhostNet.solve(6);
     } else {
       out.innerHTML = '<div class="error">Authentication failed — that is not the database password.</div>';

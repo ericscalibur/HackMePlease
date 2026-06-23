@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.env.backup</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  /* render like a raw text file served straight from the web root */
+  body{background:#0a0f12;margin:0}
+  .rawfile{max-width:760px;margin:0 auto;padding:28px 22px;color:#cfe;
+    font:13.5px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap}
+  .rawfile .c{color:#5a7a86}
+</style>
+</head>
+<body>
+<div class="rawfile"># OMNICORP service environment file — DO NOT COMMIT
+# left in web root by migration tooling. scrub before GA.
+NODE_ENV=production
+DB_HOST=pg-prod-01.internal.omnicorp.net
+DB_PORT=5432
+DB_USER=omni_app
+<span class="c"># legacy policy: secrets are Base64-encoded, not encrypted</span>
+DB_PASS=Y2pOa2NHbHNiRjh5TURJMg==
+POOL_SIZE=32
+SSL_MODE=require
+SESSION_SECRET=ZGV2X29ubHlfbm90X3NlY3JldA==
+</div>
+
+<script src="../assets/target.js"></script>
+<script>GhostNet.init(6);</script>
+</body>
+</html>

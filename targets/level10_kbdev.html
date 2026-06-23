@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — KB Index Reference</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>DEVELOPER DOCS</small></div>
+  <div class="nav"><a>Guides</a><a>API</a><a class="cta">/core/kb-dev</a></div>
+</div>
+
+<div class="container">
+  <section class="hero" style="padding:36px 0 18px">
+    <span class="eyebrow">internal · developer reference</span>
+    <h1>Knowledge Base <span class="g">Index API</span></h1>
+    <p>How the core knowledge base loads, filters, and renders its document list on the client. Reference for engineers maintaining the KB front end.</p>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <h3>The index</h3>
+      <p>On load, the KB ships its complete document catalog to the browser as a single in-memory array named
+      <span class="mono">__index</span>. Each element is a plain object describing one document:</p>
+      <pre class="code">var __index = [
+  { path: '/core/status',    title: 'Core node status',     tag: 'public' },
+  { path: '/core/telemetry', title: 'Live telemetry feed',  tag: 'public' },
+  { path: '/core/changelog', title: 'Build 4471 changelog', tag: 'public' },
+  { path: '/core/_mtc_8841', title: 'Maintenance gate',     tag: 'restricted' }
+];</pre>
+      <p class="muted">The <span class="mono">tag</span> field drives visibility. The search UI renders only records
+      whose <span class="mono">tag</span> is <span class="mono">'public'</span>; anything marked
+      <span class="mono">'restricted'</span> is filtered out of results before they're drawn. Note that filtering happens
+      <i>after</i> the full array has already been delivered to the client.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <h3>Toggling a document's visibility at runtime</h3>
+      <p>During testing it's often handy to flip a single record's visibility without redeploying. You can do this
+      directly against the live array. For example, to publish the maintenance-gate record:</p>
+      <pre class="code">__index.find(d =&gt; d.path === '/core/_mtc_8841').tag = 'public';</pre>
+      <p>Re-run the search afterward and the record will now pass the public filter and appear in results.
+      Line-by-line, here is exactly what that statement does:</p>
+
+      <div class="card" style="margin-top:14px;background:#02080b">
+        <p><span class="mono">__index</span><br>
+        <span class="muted">The global array holding every KB document record. It already contains all documents —
+        public and restricted alike — because the entire catalog was sent to your browser at page load.</span></p>
+
+        <p><span class="mono">.find(callback)</span><br>
+        <span class="muted"><code>Array.prototype.find</code> walks the array from the start and returns the
+        <b>first element</b> for which <code>callback</code> returns a truthy value. If nothing matches it returns
+        <code>undefined</code>. Crucially, what it returns is a <b>reference to the actual object</b> in the array —
+        not a copy.</span></p>
+
+        <p><span class="mono">d =&gt; d.path === '/core/_mtc_8841'</span><br>
+        <span class="muted">The predicate, written as an arrow function. For each record <code>d</code>, it tests
+        whether that record's <code>path</code> property is <b>strictly equal</b> (<code>===</code>, same type and
+        value) to the target string. The first record whose path matches is the one <code>find</code> hands back.</span></p>
+
+        <p><span class="mono">.tag = 'public'</span><br>
+        <span class="muted">Assigns a new value to the <code>tag</code> property of the object that
+        <code>find</code> returned. Because that object is the same reference living inside <code>__index</code>,
+        mutating it here changes the array in place. The next render reads the updated <code>tag</code> and the
+        document is no longer filtered.</span></p>
+      </div>
+
+      <p class="muted" style="margin-top:14px"><b>Scope &amp; persistence:</b> this is an in-memory change made from
+      the console (the page's own global scope), so it affects only the current session. A reload re-runs the shipped
+      script and restores the original catalog. Editing the array's definition in the Elements/Sources panel does
+      <i>not</i> help — that markup already executed; only the live object in memory matters.</p>
+
+      <p class="muted"><b>Console context:</b> <span class="mono">__index</span> is declared in <i>this</i> page's
+      document. If this view is embedded as a frame inside a host page, the dev-tools console defaults to the
+      <b>top</b> document — where <span class="mono">__index</span> doesn't exist, so the snippet throws
+      <code>ReferenceError: __index is not defined</code>. In the console's <b>context dropdown</b> (top-left of the
+      Console tab, defaults to <span class="mono">top</span>), select this page's frame — listed as
+      <span class="mono">#document</span> — before running the snippet. Or address the frame explicitly, e.g.
+      <span class="mono">frames[0].__index</span> or
+      <span class="mono">document.getElementById('frame').contentWindow.__index</span>.</p>
+
+      <p class="muted"><b>Gotcha:</b> if no record matches the predicate, <code>find</code> returns
+      <code>undefined</code>, and reading <code>.tag</code> on it throws <code>TypeError: Cannot set properties of
+      undefined</code>. Double-check the path string.</p>
+    </div>
+  </section>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Developer documentation.</span><span>/core/kb-dev</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>GhostNet.init(10);</script>
+</body>
+</html>

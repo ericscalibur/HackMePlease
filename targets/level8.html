@@ -38,13 +38,10 @@
 <script>
   GhostNet.init(8);
 
-  // EXACT starter token — base64 of {"user":"recruit","role":"user","iat":1718000000}
-  var STARTER = 'eyJ1c2VyIjoicmVjcnVpdCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzE4MDAwMDAwfQ==';
+  var ISSUED_TOKEN = 'eyJ1c2VyIjoicmVjcnVpdCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzE4MDAwMDAwfQ==';
 
-  // Always restore the default session on load, so a stale or previously
-  // edited token can never confuse a returning player. To escalate, edit the
-  // token in Local Storage and click "Verify session" — no reload needed.
-  localStorage.setItem('omnicorp_token', STARTER);
+  // Re-issue the session token on load so a returning user always starts clean.
+  localStorage.setItem('omnicorp_token', ISSUED_TOKEN);
 
   var whoEl = document.getElementById('who');
   var out   = document.getElementById('out');
@@ -67,7 +64,7 @@
     var obj = decodeSession();
     if (obj && obj.role === 'admin') {
       out.innerHTML = '';
-      GhostNet.stamp(out, 'Token accepted. role=admin. No signature, no problem — for you.');
+      GhostNet.stamp(out, 'Access granted: Session verified. role=admin. Welcome, administrator.');
       GhostNet.solve(8);
     } else {
       var role = obj ? obj.role : 'unknown';

@@ -30,15 +30,9 @@
       <button class="btn btn-primary btn-block" type="submit">Sign in</button>
     </form>
 
-    <div class="field" style="margin-top:18px">
-      <label>Live query (what the server will run)</label>
-      <pre class="code" id="q">SELECT * FROM users
-WHERE name='' AND pass=''</pre>
-    </div>
-
     <div id="out"></div>
     <div class="notice info" style="margin-top:16px;font-size:12.5px">
-      Debug build: the generated SQL statement is echoed below for diagnostics.
+      Sales staff only. Contact your administrator if you've forgotten your credentials.
     </div>
   </div>
 </div>
@@ -51,17 +45,18 @@ WHERE name='' AND pass=''</pre>
 
   var uEl = document.getElementById('u');
   var pEl = document.getElementById('p');
-  var qEl = document.getElementById('q');
 
-  function esc(s){
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // The legit CRM page never shows its own SQL. ORACLE's wiretap intercepts the
+  // outbound query and relays it to the operator console (left panel) live.
+  function buildQuery(){
+    return "SELECT * FROM users\nWHERE name='" + uEl.value + "' AND pass='" + pEl.value + "'";
   }
-  function renderQuery(){
-    qEl.innerHTML = "SELECT * FROM users\nWHERE name='" + esc(uEl.value) +
-      "' AND pass='" + esc(pEl.value) + "'";
+  function sendQuery(){
+    try { parent.postMessage({type:'ghostnet:query', level:7, text: buildQuery()}, '*'); } catch(e){}
   }
-  uEl.addEventListener('input', renderQuery);
-  pEl.addEventListener('input', renderQuery);
+  uEl.addEventListener('input', sendQuery);
+  pEl.addEventListener('input', sendQuery);
+  sendQuery(); // seed the wiretap on load
 
   function isBypass(u){var s=u.toLowerCase().replace(/\s+/g,' ');
     return /'\s*or\s*'?\s*\d+\s*'?\s*=\s*'?\s*\d+/.test(s)||/'\s*or\s*'[^']+'\s*=\s*'[^']+/.test(s)||/'\s*or\s*1\s*=\s*1/.test(s);}
@@ -72,7 +67,7 @@ WHERE name='' AND pass=''</pre>
     var username = uEl.value;
     if(isBypass(username)){
       out.innerHTML = '';
-      GhostNet.stamp(out, 'Query returned 4,210 rows — logged in as admin. You rewrote their question.');
+      GhostNet.stamp(out, 'Access granted: Signed in to the OMNICORP CRM. Welcome, administrator.');
       GhostNet.solve(7);
     } else {
       out.innerHTML = '<div class="error">Login failed — invalid username or password. (0 rows returned)</div>';

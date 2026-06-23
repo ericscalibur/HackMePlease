@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMNICORP — Core Document</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="mark">O</span>OMNICORP<small>MAINFRAME CORE</small></div>
+  <div class="nav"><a>Nodes</a><a>Telemetry</a><a class="cta">Operator Login</a></div>
+</div>
+
+<div class="container">
+  <section class="hero">
+    <span class="eyebrow" id="crumb">core · document</span>
+    <h1 id="docTitle">Core <span class="g">Document</span></h1>
+    <p>Read-only core record. This surface exposes no controls and logs every read.</p>
+  </section>
+
+  <section class="section">
+    <div class="card" id="docBody">
+      <h3>Nothing actionable here</h3>
+      <p class="muted">Status, telemetry and changelog are public, read-only records — they were never the way in.
+      The maintenance surface isn't a public document; it's the entry the index chose not to show you.</p>
+    </div>
+  </section>
+</div>
+
+<div class="footer"><div class="container"><span>© 2049 OMNICORP. Core systems.</span><span id="footpath">/core</span></div></div>
+
+<script src="../assets/target.js"></script>
+<script>
+  GhostNet.init(10);
+
+  // Title this dead-end page after whatever core path was requested.
+  var DOCS = {
+    'status':    { h:'Core Node Status', b:'All core nodes nominal. Uptime 99.99%. This page is a status mirror — no control actions are exposed.' },
+    'telemetry': { h:'Live Telemetry Feed', b:'Streaming read-only metrics: throughput, latency, power draw. Informational only. Nothing here opens a shell.' },
+    'changelog': { h:'Build 4471 Changelog', b:'Routine maintenance notes and version bumps. Public record. No credentials, no endpoints — keep looking.' }
+  };
+  try {
+    var url  = parent.document.getElementById('addr').value;       // same-origin read
+    var path = url.replace(/^https?:\/\/[^/]+/, '') || '/core';
+    var key  = path.split('/').filter(Boolean).pop() || 'document';
+    document.getElementById('crumb').textContent = 'core · ' + path;
+    document.getElementById('footpath').textContent = path;
+    var doc = DOCS[key];
+    if (doc) {
+      document.getElementById('docTitle').innerHTML = doc.h.replace(/(\w+)$/, '<span class="g">$1</span>');
+      document.getElementById('docBody').innerHTML = '<h3>' + doc.h + '</h3><p class="muted">' + doc.b + '</p>';
+    }
+  } catch (e) { /* not framed — leave defaults */ }
+</script>
+</body>
+</html>

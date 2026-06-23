@@ -57,11 +57,14 @@
     var out = document.getElementById('out');
 
     var bypass  = injects(u) || injects(p);
-    var hasUser = (u + ' ' + p).toLowerCase().indexOf('root_kx') !== -1;
+    // The operator name must land in the USERNAME field (the user column) — a
+    // tautology in one field plus the name dumped in the other doesn't
+    // authenticate you as that operator in a real query.
+    var hasUser = u.toLowerCase().indexOf('root_kx') !== -1;
 
     if (hasUser && bypass) {
       out.innerHTML = '';
-      GhostNet.stamp(out, 'CORE BREACHED. root shell on the OMNICORP mainframe. You did it, Ghost.');
+      GhostNet.stamp(out, 'Access granted: Root shell established on the OMNICORP mainframe. Welcome to OMNICORP — the omnipotent corporation. Profit is power.');
       GhostNet.solve(10);
     } else if (bypass) {
       out.innerHTML = '<div class="error">Query bypassed — but this gate also requires a valid maintenance operator name. Whose credentials did the migration leave behind?</div>';

@@ -18,15 +18,17 @@ const LEVELS = [
   { id:1, code:'NODE-01', host:'edge', title:'First Contact', concept:'VIEW SOURCE',
     badge:{name:'Source Seeker',color:'#00f0ff',glyph:'</>'},
     routes:[['/maint/login','level1.html']],
-    brief:`<span class="from">ORACLE //</span> Welcome to the grid, recruit. OMNICORP left a maintenance
+    brief:`<span class="from">ORACLE //</span> Welcome to the grid, {cn}. OMNICORP left a maintenance
       login exposed. Their devs hid the passphrase right in the page they shipped to your browser.
       Rule one: <b>nothing your browser receives is secret.</b> Pop open DevTools and go find it.`,
-    devtip:`Right-click the page → <b>Inspect</b>, or hit <span class="kbd">F12</span>. Try the
-      <b>Elements</b> tab and the <b>Sources</b> tab. Even faster for raw HTML: <span class="kbd">Ctrl/Cmd+U</span> (View Source) in a normal tab.`,
+    devtip:`Right-click the page → <b>Inspect</b>, or hit <span class="kbd">F12</span>. Use the
+      <b>Elements</b> tab to read the live DOM. Fastest of all: <span class="kbd">Option/Ctrl+Cmd+F</span> for
+      DevTools' global search, which scans every script for a keyword. (Heads up: plain View Source —
+      <span class="kbd">Cmd+U</span> — won't help here; the target runs in a frame, so it only shows the outer shell.)`,
     hints:[
-      `Devs leave notes in <b>HTML comments</b> (<code>&lt;!-- ... --&gt;</code>) and plain JS variables.`,
-      `In <b>Sources</b>, open the page's script. Scan for a line like <code>password = '...'</code>.`,
-      `Whatever sits between the quotes is the passphrase. Type it into the form and authenticate.`
+      `Devs sometimes accidentally leave sensitive information hardcoded as variables and forget to move them server side.`,
+      `Right click somewhere in the page and select <b>Inspect</b>. Look for something that could be a password.`,
+      `Press <span class="kbd">Option + Command + F</span> to open the Search bar. Type in <code>MAINT_PASSPHRASE</code> and hit enter. The password is in between the <code>' '</code>.`
     ],
     intel:{tag:'INTEL DROP',title:'Client-Side ≠ Secret',
       body:`Everything a browser renders — HTML, CSS, JS, comments — is downloaded to the user first.
@@ -43,9 +45,9 @@ const LEVELS = [
     devtip:`Open <b>Elements</b>, find the form. Double-click an attribute value to edit it live. You can
       delete a <code>disabled</code> attribute or change a hidden input's <code>value</code> right there.`,
     hints:[
-      `Look for <code>&lt;input type="hidden" name="access_level"&gt;</code> in the Elements tree.`,
-      `Double-click its <code>value</code> and change <code>guest</code> → <code>admin</code>.`,
-      `Then submit the form. The page reads the live value you edited.`
+      `The page decides whether you're admin from a value it ships to your browser and trusts right back. Find where your access tier actually lives.`,
+      `Right-click → <b>Inspect</b> and scan the form in the Elements tree for a hidden field — <code>&lt;input type="hidden" name="access_level"&gt;</code>. Its value is <code>guest</code>, and the "submission payload" line on the page echoes it live.`,
+      `Double-click that hidden input's <code>value</code> in the Elements tree, change <code>guest</code> to <code>admin</code>, then click <b>Enter Dashboard</b>. The page submits whatever you set.`
     ],
     intel:{tag:'INTEL DROP',title:'Never Trust the Client to Police Itself',
       body:`Hidden inputs, <code>disabled</code> buttons, <code>readonly</code> fields and dropdown limits are
@@ -62,9 +64,9 @@ const LEVELS = [
     devtip:`In <b>Console</b> you can run the page's own functions and read its variables. You can also set a
       <b>breakpoint</b> in Sources and step through. Or just call <code>check()</code> logic yourself.`,
     hints:[
-      `The key isn't plain text — it's built with <code>String.fromCharCode(...)</code>.`,
-      `In the Console, paste the same <code>String.fromCharCode(72,73,...)</code> call to decode it.`,
-      `Or type <code>__key</code> / inspect the validator in Sources. Enter the decoded key.`
+      `The check runs entirely on your machine, and the correct key is assembled right there in the page's script — so you can just read it off.`,
+      `Open <b>Inspect</b> and use the global search (<span class="kbd">Option/Ctrl+Cmd+F</span>) for <code>__key</code>. You'll see it's built with <code>String.fromCharCode(...)</code> instead of stored as plain text.`,
+      `In the <b>Console</b>, any of these reveals the key — pick whichever clicks for you, hit Enter, then type the result into the form:<br>• just type <code>__key</code> and Enter — the variable already holds the decoded string<br>• <code>console.log(__key)</code> — same thing, printed explicitly<br>• re-run the decode yourself: <code>String.fromCharCode(71,104,48,115,116,75,101,121)</code><br>• or wrap that: <code>console.log(String.fromCharCode(71,104,48,115,116,75,101,121))</code><br>All four hand you the same access key.`
     ],
     intel:{tag:'INTEL DROP',title:'Validation Belongs on the Server',
       body:`Client checks improve UX and stop honest mistakes, but an attacker reads the logic, skips it, or
@@ -81,9 +83,9 @@ const LEVELS = [
       pick this site, and edit the <code>role</code> value. You can also run
       <code>localStorage.role='admin'</code> in the Console.`,
     hints:[
-      `The portal stores <code>omnicorp_role</code> in Local Storage with value <code>guest</code>.`,
-      `Change it to <code>staff</code> via the Application tab or <code>localStorage.omnicorp_role='staff'</code>.`,
-      `Then click <b>Reload portal</b> on the page (or refresh the frame).`
+      `This portal reads your "badge" from a value parked in your own browser — which means you can quietly rewrite it.`,
+      `Open <b>Inspect</b> → <b>Application</b> tab (Chrome) / <b>Storage</b> (Firefox) → <b>Local Storage</b>, and pick this site. You'll find <code>omnicorp_role</code> set to <code>guest</code>.`,
+      `Change that value to <code>staff</code> — double-click it in the Application tab, or run <code>localStorage.omnicorp_role='staff'</code> in the Console — then click <b>Reload portal</b>.`
     ],
     intel:{tag:'INTEL DROP',title:'Cookies & Local Storage Are User-Editable',
       body:`Cookies, <code>localStorage</code> and <code>sessionStorage</code> live on the client and can be
@@ -99,9 +101,9 @@ const LEVELS = [
     devtip:`Use the fake browser's <b>address bar</b> up top. Edit the path and press Enter to navigate —
       just like a real browser.`,
     hints:[
-      `Almost every site serves <code>/robots.txt</code>. Navigate the address bar there.`,
-      `<code>Disallow:</code> lines say where crawlers shouldn't go — i.e. exactly where YOU should.`,
-      `Type the disallowed admin path into the address bar and hit Enter.`
+      `The admin panel isn't linked from anywhere — but the site politely publishes a list of paths it doesn't want crawlers visiting. Go read that list.`,
+      `Type <code>/robots.txt</code> into the fake browser's address bar and press Enter. The <code>Disallow:</code> lines mark where crawlers shouldn't go — i.e. exactly where you should.`,
+      `One of those lines is <code>/sys-admin-7y2/</code>. Type that path into the address bar, hit Enter, and walk straight into the unlisted console.`
     ],
     intel:{tag:'INTEL DROP',title:'Obscurity Is Not Security',
       body:`<code>robots.txt</code>, sitemaps, JS source and predictable URLs (<code>/admin</code>,
@@ -110,15 +112,16 @@ const LEVELS = [
 
   { id:6, code:'NODE-06', host:'config', title:'Cipher of Fools', concept:'ENCODING ≠ ENCRYPTION',
     badge:{name:'Cryptographer',color:'#39ff14',glyph:'⟐'},
-    routes:[['/db','level6.html']],
-    brief:`<span class="from">ORACLE //</span> We grabbed an OMNICORP config. The DB password is "protected"…
-      by Base64. That's a costume, not a lock. Strip it off.`,
-    devtip:`The <b>Console</b> is a calculator. <code>atob("...")</code> decodes Base64;
-      <code>btoa("...")</code> encodes it. Paste the captured string and decode.`,
+    routes:[['/db','level6.html'],['/.env.backup','level6_env.html']],
+    brief:`<span class="from">ORACLE //</span> OMNICORP's database console won't show you the password — but their
+      migration tooling keeps dumping environment <b>backup files</b> into the web root and forgetting to delete them.
+      Find the leak, then strip the "encryption" off the credential inside. It's only Base64 — a costume, not a lock.`,
+    devtip:`Navigate with the fake browser's <b>address bar</b> (like NODE-05) to reach the stray file. Then the
+      <b>Console</b> is your calculator: <code>atob("...")</code> decodes Base64, <code>btoa("...")</code> encodes it.`,
     hints:[
-      `Base64 is reversible by anyone — often ends in <code>=</code>.`,
-      `Run <code>atob("&lt;captured&gt;")</code> in the Console.`,
-      `If the result is still gibberish, it's double-wrapped — decode it again.`
+      `The <code>/db</code> page deliberately doesn't display the password — but read the deploy note on it. It points at the real mistake: a backup file left sitting in the web root.`,
+      `The note names <code>/.env.backup</code>. Type that into the address bar and hit Enter to read the leaked environment file. Inside, <code>DB_PASS</code> is Base64 (note the trailing <code>==</code>) — encoding, not encryption. New to Base64? <a href="https://en.wikipedia.org/wiki/Base64" target="_blank" rel="noopener">en.wikipedia.org/wiki/Base64</a>.`,
+      `Copy that <code>DB_PASS</code> value and run <code>atob("...")</code> on it in the Console. The first decode hands you <i>more</i> Base64, not a word — it's wrapped twice, so run <code>atob()</code> on that result again. Paste the readable string it returns into the <code>db_pass</code> field on <code>/db</code>.`
     ],
     intel:{tag:'INTEL DROP',title:'Know Your Encodings',
       body:`Base64, hex, URL-encoding and ROT13 are <b>encodings</b>: reversible, keyless. Encryption needs a
@@ -127,15 +130,17 @@ const LEVELS = [
   { id:7, code:'NODE-07', host:'crm', title:'The Injection', concept:'SQL INJECTION',
     badge:{name:'Injector',color:'#ff2bd6',glyph:'⌥'},
     routes:[['/login','level7.html']],
+    wiretap:{note:`ORACLE is sniffing the query the CRM builds from your input. Make its <code>WHERE</code> clause always true.`,
+      seed:"SELECT * FROM users\nWHERE name='' AND pass=''"},
     brief:`<span class="from">ORACLE //</span> The real art. This login glues your typing straight into a
       database query. The right punctuation rewrites the question itself — turning "is this password correct?"
       into "is anything true?" The technique that breached banks and governments. Learn it so you can shut it.`,
-    devtip:`No DevTools needed here — just the login form. Watch the <b>live query</b> the page shows as you
-      type; make its <code>WHERE</code> clause always true.`,
+    devtip:`No DevTools needed here — just the login form. We've tapped the wire: watch the
+      <b>ORACLE WIRETAP</b> below echo the query as you type, and make its <code>WHERE</code> clause always true.`,
     hints:[
-      `The server builds <code>... WHERE name='<i>YOU</i>' AND pass='<i>YOU</i>'</code>. Your input lands in the quotes.`,
-      `A single quote <code>'</code> ends their string. Then add logic: <code>OR '1'='1</code> — always true.`,
-      `Username: <code>' OR '1'='1</code> &nbsp;and append <code>--</code> to comment out the rest. Any password.`
+      `The login pastes your username straight into a database query — watch the <b>ORACLE WIRETAP</b> in this panel redraw as you type. Your job is to make its condition always true.`,
+      `Your text lands inside <code>name='...'</code>. Close that quote, bolt on an always-true clause, and comment out the rest. Background: <a href="https://owasp.org/www-community/attacks/SQL_Injection" target="_blank" rel="noopener">owasp.org — SQL Injection</a>.`,
+      `In <b>Username</b> type <code>' OR '1'='1</code> followed by <code>--</code> (so it reads <code>' OR '1'='1' --</code>). Put anything in <b>Password</b> and sign in.`
     ],
     intel:{tag:'INTEL DROP',title:'Parameterized Queries Kill Injection',
       body:`Injection = <b>user input treated as code</b>. The fix isn't banning apostrophes — it's
@@ -153,9 +158,9 @@ const LEVELS = [
       write it back: <code>localStorage.omnicorp_token = btoa(JSON.stringify(obj))</code>. (Reloading the page
       restores the default token, so apply your edit with <b>Verify session</b> — no reload needed.)`,
     hints:[
-      `The token <code>omnicorp_token</code> is Base64 of JSON like <code>{"user":"recruit","role":"user"}</code>.`,
-      `Decode it, change <code>"role":"user"</code> → <code>"role":"admin"</code>.`,
-      `Re-encode (<code>btoa</code>), write it back to <code>omnicorp_token</code> in Local Storage, then click <b>Verify session</b> (don't reload — that resets it).`
+      `Your session token <i>is</i> your ID card — and nobody signed it, so you can rewrite it. First find it in your browser's storage.`,
+      `In <b>Inspect</b> → <b>Application</b> → <b>Local Storage</b>, the key <code>omnicorp_token</code> holds Base64. Decode it in the Console with <code>atob(localStorage.omnicorp_token)</code> to read the JSON inside. This is a toy version of a JWT — real ones are signed: <a href="https://jwt.io" target="_blank" rel="noopener">jwt.io</a>.`,
+      `Flip <code>"role":"user"</code> to <code>"role":"admin"</code>, re-encode, write it back, then click <b>Verify session</b> (don't reload — that resets it). One Console line does it all: <code>localStorage.omnicorp_token = btoa(JSON.stringify({...JSON.parse(atob(localStorage.omnicorp_token)), role:'admin'}))</code>`
     ],
     intel:{tag:'INTEL DROP',title:'Sign Your Tokens (JWT & Friends)',
       body:`Real tokens (JWT) carry a <b>cryptographic signature</b>. Edit the payload and the signature breaks,
@@ -174,9 +179,9 @@ const LEVELS = [
       and post it. You're not writing a useful program; you're proving the page will run <b>any</b> code you give
       it. The content is irrelevant — that it executes is the whole point.`,
     hints:[
-      `The goal is just to inject a <code>&lt;script&gt;&lt;/script&gt;</code> tag into the support wall. You don't need it to <i>do</i> anything — getting it accepted is the win.`,
-      `Literally paste <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> into the message box and click Post.`,
-      `An image with a broken source also works: <code>&lt;img src=x onerror=alert(1)&gt;</code>. The moment any executable tag posts, the node breaks.`
+      `The wall drops your message into the page as raw HTML instead of plain text. Post something the browser will <i>execute</i>, not just display.`,
+      `Any tag that runs code proves the flaw — a <code>&lt;script&gt;</code> tag or an event handler like <code>onerror</code>. More on this: <a href="https://owasp.org/www-community/attacks/xss/" target="_blank" rel="noopener">owasp.org — Cross Site Scripting</a>.`,
+      `Paste <code>&lt;img src=x onerror=alert(1)&gt;</code> (or <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>) into the message box and click <b>Post</b>. The instant an executable tag lands on the wall, the node breaks.`
     ],
     intel:{tag:'INTEL DROP',title:'Encode Output, Sanitize Input',
       body:`XSS happens when input is rendered as <b>HTML/JS</b> instead of text. Defenders <b>escape output</b>
@@ -186,16 +191,24 @@ const LEVELS = [
 
   { id:10, code:'NODE-10', host:'core', title:'The Mainframe', concept:'CHAINING THE KILL',
     badge:{name:'GHOST',color:'#ff2bd6',glyph:'☠'},
-    routes:[['/','level10.html'],['/core/_mtc_8841','level10_gate.html']],
-    brief:`<span class="from">ORACLE //</span> This is it. OMNICORP's core — every defense at once. No single
-      trick opens it; you'll <b>chain</b> what you learned. Recon the source for a hidden endpoint, decode the
-      leaked token, then inject through the final gate. Do this and you're a <b>Ghost</b>. Go dark.`,
-    devtip:`Everything you've used: <b>Sources</b> (find the hidden endpoint comment), <b>Console</b>
-      (<code>atob</code> the leaked token), the <b>address bar</b> (navigate to the endpoint), and SQLi at the gate.`,
+    routes:[['/','level10.html'],
+      ['/core/status','level10_doc.html'],
+      ['/core/telemetry','level10_doc.html'],
+      ['/core/changelog','level10_doc.html'],
+      ['/core/kb-dev','level10_kbdev.html'],
+      ['/core/_mtc_8841','level10_gate.html']],
+    brief:`<span class="from">ORACLE //</span> This is it. OMNICORP's core. No single trick opens it — <b>chain</b>
+      what you've learned. Their knowledge base ships its <i>entire</i> document index to your browser and only hides
+      the restricted rows in the UI. Read their own dev notes, flip the hidden entry's flag in memory, <b>decode</b>
+      the leaked operator token, then <b>inject</b> at the gate it reveals. Do this and you're a <b>Ghost</b>. Go dark.`,
+    devtip:`No injection needed for recon — the page already trusts the client. The "core knowledge base" filters
+      results in your browser, so what it hides is right there with you. Read the public docs (the <b>KB developer
+      notes</b> explain the index), rewrite the live array in the <b>Console</b> (state tampering, like NODE-04/08),
+      <code>atob</code> the leaked token, navigate the <b>address bar</b> to the gate it exposes, then SQLi it.`,
     hints:[
-      `Step 1 — recon: Inspect the core page's source for a commented-out maintenance endpoint path.`,
-      `Step 2 — decode: the source leaks a Base64 <code>bootstrap_token</code>; <code>atob()</code> it to read the maint username.`,
-      `Step 3 — inject: at the gate, put the leaked username in the <b>Maint username</b> field and a SQL tautology in the <b>Auth string</b> — e.g. username <code>root_kx</code>, auth <code>' OR '1'='1' --</code>. (Putting it all in the username, <code>root_kx' OR '1'='1' --</code>, works too.)`
+      `The knowledge-base search filters its <i>own</i> results on the client — and it even reports how many entries it's hiding. Search <code>core</code>, then dig through the public docs it does show you.`,
+      `One of those public docs is the KB <b>developer notes</b>. It explains the in-memory document index (<code>__index</code>) and gives the one-liner that flips a record from <code>restricted</code> to <code>public</code>. (Separately: the core landing page's source leaks a Base64 <code>bootstrap_token</code> — <code>atob()</code> it in the Console for the operator's name.)`,
+      `On the dev-notes page, run its example in the Console — first switch the console's context dropdown from <code>top</code> to the core page's frame, listed as <code>#document</code>:<br><code>__index.find(d =&gt; d.path === '/core/_mtc_8841').tag = 'public';</code><br>Re-run the search and the maintenance gate appears. Navigate the address bar to <code>/core/_mtc_8841</code>, then at the gate enter username <code>root_kx</code> (from the decoded token) and auth <code>' OR '1'='1' --</code> to breach the core. (All in one field — <code>root_kx' OR '1'='1' --</code> — works too.)<br><br><i>Didn't spot the token in the source?</i> The search box reflects raw HTML, so you can also lift it straight out: paste <code>&lt;img src=x onerror="alert(bootstrap_token)"&gt;</code> and Search — it pops the token in an alert. <code>atob()</code> that for <code>root_kx</code>.`
     ],
     intel:{tag:'FINAL INTEL',title:'Attackers Chain, Defenders Layer',
       body:`Real breaches are rarely one flaw — they're a <b>chain</b>: recon → disclosure → weak crypto →
@@ -205,7 +218,7 @@ const LEVELS = [
 ];
 
 /* ---------- state ---------- */
-function load(){ try{return JSON.parse(localStorage.getItem(STORE))||{done:[],codename:''}}catch(e){return{done:[],codename:''}} }
+function load(){ try{var s=JSON.parse(localStorage.getItem(STORE))||{done:[],codename:''}; if(isInjection(s.codename)) s.codename=''; return s;}catch(e){return{done:[],codename:''}} }
 function save(s){ localStorage.setItem(STORE, JSON.stringify(s)); }
 let state = load();
 let current = 1;
@@ -214,6 +227,67 @@ const isDone = id => state.done.includes(id);
 const unlocked = id => id===1 || isDone(id-1);
 const rankFor = n => { let r=RANKS[0].name; for(const x of RANKS) if(n>=x.min) r=x.name; return r; };
 const L = id => LEVELS.find(x=>x.id===id);
+
+/* codename helpers — replace {cn} with the operator's codename, default 'recruit' */
+const cn = () => state.codename || 'recruit';
+// HTML-escape so a codename can never break out of an attribute or execute,
+// even where {cn} is injected into innerHTML (briefs, prize page).
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const personalize = s => (s||'').replace(/\{cn\}/g, esc(cn()));
+
+/* ---------- easter egg: try your own tricks on OUR codename field ---------- */
+function isInjection(s){
+  s=(s||'').toLowerCase();
+  return /<\s*(script|img|svg|iframe|body|a\b)/.test(s)   // XSS tags
+      || /on\w+\s*=/.test(s)                              // event handlers: onerror=, onload=
+      || /javascript:/.test(s)                            // js: uri
+      || /'\s*or\s*'?\s*\d/.test(s)                       // SQLi  ' OR '1
+      || /'\s*or\s*1\s*=\s*1/.test(s)                     // SQLi  ' OR 1=1
+      || /\bunion\s+select\b/.test(s)                     // SQLi  UNION SELECT
+      || /'\s*(--|#)/.test(s);                            // SQL comment
+}
+const PRIZE_ART =
+`        .-~~~~~~~~~-.
+      .-'           '-.
+    .'                 '.
+   /                     \\
+  |    .---.     .---.    |
+  |   | O.O |   | O.O |   |
+  |    '---'     '---'    |
+  |                       |
+  |                       |
+   \\                     /
+    \\  /\\  /\\  /\\  /\\  /
+     \\/  \\/  \\/  \\/  \\/`;
+function showPrize(){
+  let el=document.getElementById('prize');
+  if(!el){ el=document.createElement('div'); el.id='prize'; el.className='prize'; document.body.appendChild(el); }
+  el.innerHTML=`<div class="prizebox">
+    <button class="mx" id="prizeX" title="close" aria-label="close">✕</button>
+    <pre class="art"></pre>
+    <div class="ptitle">// INPUT NOT SANITIZED //</div>
+    <div class="pmsg">Well, well. You turned <b>GHOST//NET's own</b> codename field into an injection point —
+      the exact move from the nodes you just breached. We <i>told</i> you: <b>never trust the client.</b> Not even ours.<br><br>
+      So here's your <b>real</b> prize, ${personalize('{cn}')} — the keys to the kingdom. Every lock in this app is just
+      <b>state sitting in your own browser.</b> Pop open the console (F12) and run:
+      <pre class="code">state.done = [1,2,3,4,5,6,7,8,9];  // mark nodes 1-9 breached
+save(state);                        // persist it across reloads
+openLevel(10);                      // warp straight to the core</pre>
+      Or use the operator API we left unlocked just for you — <code>ghost.help()</code>, <code>ghost.goto(10)</code>,
+      <code>ghost.unlockAll()</code>.<br><br>
+      <span style="color:var(--green)">SECRET RANK UNLOCKED — ROOT</span></div>
+    <div class="row" style="justify-content:center;gap:10px">
+      <button class="btn mag" id="prizeWarp">drop the skeleton key — unlock the grid →</button>
+      <button class="btn ghost" id="prizeClose">close the back door</button>
+    </div>
+  </div>`;
+  el.querySelector('.art').textContent = PRIZE_ART;  // textContent: we practice safe rendering
+  el.classList.add('show');
+  const close=()=>el.classList.remove('show');
+  document.getElementById('prizeClose').onclick=close;
+  document.getElementById('prizeX').onclick=close;
+  document.getElementById('prizeWarp').onclick=()=>{ close(); ghost.unlockAll(); };
+}
 
 function markSolved(id){ if(!isDone(id)){ state.done.push(id); state.done.sort((a,b)=>a-b); save(state);} }
 
@@ -233,25 +307,30 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show')
 /* ---------- fake browser ---------- */
 let navStack=[];
 function urlFor(lvl, path){ return `https://${lvl.host}.omnicorp.net${path}`; }
-function resolve(lvl, path){
+// Normalize any input (full URL or bare path) down to a clean leading-slash path.
+function normPath(path){
   path = (path||'').trim();
-  // accept either a full url or a bare path
   const m = path.match(/^https?:\/\/[^/]+(\/.*)?$/i); if(m) path = m[1]||'/';
   if(!path.startsWith('/')) path = '/'+path;
-  path = path.replace(/\/+$/,'') || '/';
+  return path.replace(/\/+$/,'') || '/';
+}
+function resolve(lvl, path){
+  path = normPath(path);
   const hit = lvl.routes.find(r=> r[0].replace(/\/+$/,'')===path || r[0]===path );
   return hit ? hit[1] : null;
 }
 function navigate(path, pushHistory=true){
   const lvl=L(current);
-  const file=resolve(lvl, path);
+  const norm=normPath(path);
+  const file=resolve(lvl, norm);
   const frame=$('#frame'), addr=$('#addr');
+  // record every visit (valid pages AND 404s) so Back always has somewhere to go
+  if(pushHistory) navStack.push(norm);
   if(file){
-    if(pushHistory) navStack.push(path);
     addr.value = urlFor(lvl, lvl.routes.find(r=>r[1]===file)[0]);
     frame.src = `targets/${file}`;
   } else {
-    addr.value = urlFor(lvl, path.startsWith('/')?path:'/'+path);
+    addr.value = urlFor(lvl, norm);
     frame.src = `targets/404.html`;
   }
 }
@@ -269,7 +348,8 @@ function renderHeader(){
   const n=state.done.length;
   $('#rk').textContent=rankFor(n);
   $('#cn').textContent=state.codename||'recruit';
-  $('#prog').textContent=n+'/'+LEVELS.length;
+  // show the node you're ON (matches the NODE-0X label), not the breached count
+  $('#prog').textContent=current+'/'+LEVELS.length;
   $('#progbar').style.width=(n/LEVELS.length*100)+'%';
 }
 function renderPanel(){
@@ -283,9 +363,10 @@ function renderPanel(){
       ${done?'<span class="pill green">✓ breached</span>':''}
     </div>
     <div class="ttl glitch" data-t="${lvl.title}">${lvl.title}</div>
-    <div class="brief">${lvl.brief}</div>
+    <div class="brief">${personalize(lvl.brief)}</div>
 
-    <div class="devtip"><div class="k">⌘</div><div><b style="color:var(--cyan)">DEVTOOLS BRIEF —</b> ${lvl.devtip}</div></div>
+    <div class="devtip"><div class="k">⌘</div><div><b style="color:var(--cyan)">DEVTOOLS BRIEF —</b> ${personalize(lvl.devtip)}</div></div>
+    ${lvl.wiretap?`<div class="wiretap"><div class="k">⊟</div><div><b style="color:var(--mag)">ORACLE WIRETAP —</b> ${lvl.wiretap.note}<pre class="code" id="wiretapBody">${lvl.wiretap.seed}</pre></div></div>`:''}
 
     <div class="sec">
       <div class="row"><h4>⚑ INTEL & HINTS</h4><span class="spacer"></span>
@@ -311,7 +392,7 @@ function renderPanel(){
   $('#hintBtn').onclick=()=>{
     if(hintsShown>=lvl.hints.length){ toast('No more hints — you have everything you need'); return; }
     const h=document.createElement('div'); h.className='hint';
-    h.innerHTML='<b>HINT '+(hintsShown+1)+'/'+lvl.hints.length+' »</b> '+lvl.hints[hintsShown];
+    h.innerHTML='<b>HINT '+(hintsShown+1)+'/'+lvl.hints.length+' »</b> '+personalize(lvl.hints[hintsShown]);
     $('#hintArea').appendChild(h); hintsShown++;
   };
   $('#intelBtn').onclick=()=>revealIntel(false);
@@ -321,7 +402,7 @@ function revealIntel(auto){
   const lvl=L(current); if(intelShown) return; intelShown=true;
   $('#intelArea').innerHTML=`
     <div class="intel"><span class="tag">${lvl.intel.tag}</span><h5>${lvl.intel.title}</h5>
-      <div>${lvl.intel.body}</div>
+      <div>${personalize(lvl.intel.body)}</div>
       <div class="row" style="margin-top:12px">
         <span class="shield" style="width:auto">${shield(lvl.badge.color,lvl.badge.glyph,lvl.id)}</span>
         <div><div class="ok" style="font-size:11px">SHIELD EARNED</div><b style="color:#fff">${lvl.badge.name}</b></div>
@@ -348,7 +429,7 @@ function renderOverlay(){
       <button class="btn ghost sm" id="closeOv">✕ close</button></div>
     <div class="row" style="margin-top:14px">
       <div class="mut" style="font-size:12px">rank <span class="rk">${rankFor(n)}</span> · ${n}/${LEVELS.length} nodes breached · codename
-        <input class="cn" id="cnEdit" value="${state.codename||''}" placeholder="recruit" maxlength="18" style="width:130px">
+        <input class="cn" id="cnEdit" value="${esc(state.codename||'')}" placeholder="recruit" maxlength="40" style="width:130px">
         <button class="btn ghost sm" id="cnSave">set</button></div></div>
     <div class="grid">${cards}</div>
     <div class="sec"><h4>▣ SHIELD WALL</h4><div class="badges">${badges}</div></div>
@@ -358,7 +439,16 @@ function renderOverlay(){
       <div style="margin-top:10px"><button class="btn ghost sm" id="resetBtn">⟲ reset all progress</button></div>
     </div></div>`;
   $('#closeOv').onclick=closeOverlay;
-  $('#cnSave').onclick=()=>{ state.codename=$('#cnEdit').value.trim(); save(state); renderHeader(); toast('Codename set'); };
+  const setCodename=()=>{
+    const v=$('#cnEdit').value.trim();
+    if(isInjection(v)){                            // easter egg — don't save a payload as a name
+      try{ alert("You've been hacked by " + cn()); }catch(e){}
+      showPrize(); return;
+    }
+    state.codename=v; save(state); renderHeader(); toast('Codename set');
+  };
+  $('#cnSave').onclick=setCodename;
+  $('#cnEdit').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); setCodename(); } });
   $('#resetBtn').onclick=()=>{ if(confirm('Wipe all progress and badges?')){ state={done:[],codename:state.codename}; save(state); renderOverlay(); renderPanel(); toast('Grid reset'); } };
   $('#overlay').querySelectorAll('.lvl').forEach(c=>c.onclick=()=>openLevel(+c.dataset.id));
 }
@@ -373,18 +463,21 @@ function celebrate(id){
       <div class="brief" style="text-align:left;margin:10px 0"><span class="from">ORACLE //</span> The mainframe is ours.
         You came in a script kiddie; you leave a <b style="color:var(--mag)">Ghost</b> — ten techniques deep, all ten shields earned.
         Now use them right: break what's yours, fix what isn't, never stop reading the source. Welcome to the Collective.</div>
-      <button class="btn mag" id="mClose">return to the grid</button>`;
+      <button class="btn mag" id="mGrid">return to the grid</button>
+      <button class="mx" id="mX" title="close" aria-label="close">✕</button>`;
   } else {
     box.innerHTML=`<div style="font-size:12px;letter-spacing:3px;color:var(--green)">NODE BREACHED</div>
       <div class="shield" style="width:auto;margin:14px auto">${shield(lvl.badge.color,lvl.badge.glyph,'c'+id)}</div>
       <div style="color:#fff;font-size:18px">${lvl.badge.name}</div>
       <div class="mut" style="font-size:12px;margin:8px 0">mastered: <b style="color:var(--cyan)">${lvl.concept}</b> · rank <b class="ok">${rankFor(n)}</b> · ${n}/${LEVELS.length}</div>
       <div class="row" style="justify-content:center;margin-top:8px">
-        <button class="btn ghost" id="mClose">grid</button>
-        ${id<LEVELS.length?'<button class="btn" id="mNext">next node →</button>':''}</div>`;
+        <button class="btn ghost" id="mGrid">grid</button>
+        ${id<LEVELS.length?'<button class="btn" id="mNext">next node →</button>':''}</div>
+      <button class="mx" id="mX" title="close" aria-label="close">✕</button>`;
   }
   $('#modal').classList.add('show');
-  $('#mClose').onclick=()=>{ $('#modal').classList.remove('show'); if(final) openOverlay(); };
+  $('#mGrid').onclick=()=>{ $('#modal').classList.remove('show'); openOverlay(); };
+  $('#mX').onclick=()=>{ $('#modal').classList.remove('show'); };
   const nx=$('#mNext'); if(nx) nx.onclick=()=>{ $('#modal').classList.remove('show'); openLevel(id+1); };
 }
 
@@ -394,18 +487,62 @@ function handleSolved(id){
   const first=!isDone(id);
   markSolved(id);
   renderHeader();
-  if(first){ revealIntel(true); celebrate(id); }
+  if(first){ revealIntel(true); setTimeout(()=>celebrate(id), 5000); }
   else toast('Node already breached');
 }
 window.addEventListener('message', e=>{
   const d=e.data||{};
   if(d.type==='ghostnet:solved') handleSolved(+d.level);
+  if(d.type==='ghostnet:query'){ const el=$('#wiretapBody'); if(el) el.textContent=d.text; }
 });
 /* storage fallback (in case postMessage is blocked) */
 setInterval(()=>{
   const k='ghostnet_solved_'+current;
   if(localStorage.getItem(k)==='1'){ localStorage.removeItem(k); handleSolved(current); }
 }, 800);
+
+/* ---------- easter egg: operator console API (real level-ups) ----------
+   Everything that gates a node is just client-side state. Reward the curious
+   with the keys: a tiny global API to read and rewrite that state. */
+const ghost = {
+  help(){
+    console.log('%c GHOST//NET // operator console ','background:#02120a;color:#39ff14;font-weight:bold;padding:2px 6px;border:1px solid #39ff14');
+    console.log('%cYou found the back door. Every lock here is client-side state — so here are the keys:','color:#9fb');
+    console.table({
+      'ghost.state()'    : 'show your progress, rank and current node',
+      'ghost.goto(n)'    : 'warp to node n (unlocks the path to it)',
+      'ghost.unlockAll()': 'master key — unlock every node',
+      'ghost.reset()'    : 'wipe all progress'
+    });
+    console.log('%cUnder the hood it is literally: %cstate.done=[1,2,3,4,5,6,7,8,9]; save(state); openLevel(10)','color:#9fb','color:#39ff14');
+    return 'Pick a command above, operator.';
+  },
+  state(){ return { node: current, breached: [...state.done], rank: rankFor(state.done.length), codename: cn() }; },
+  goto(n){
+    n = Math.max(1, Math.min(LEVELS.length, parseInt(n,10)||1));
+    for(let i=1;i<n;i++){ if(!state.done.includes(i)) state.done.push(i); }
+    state.done.sort((a,b)=>a-b); save(state);
+    openLevel(n);
+    return 'Warped to NODE-' + String(n).padStart(2,'0');
+  },
+  unlockAll(){
+    state.done = LEVELS.slice(0,-1).map(l=>l.id);   // every prior node done → all nodes reachable
+    save(state); renderHeader(); openOverlay(); toast('MASTER KEY — all nodes unlocked');
+    return 'All nodes unlocked.';
+  },
+  reset(){ state={done:[],codename:state.codename}; save(state); renderOverlay(); openLevel(1); toast('Progress wiped'); return 'Reset complete.'; }
+};
+window.ghost = ghost;
+
+/* easter egg: the Konami code anywhere drops DEV MODE (master key) */
+function wireKonami(){
+  const SEQ='arrowup arrowup arrowdown arrowdown arrowleft arrowright arrowleft arrowright b a'.split(' ');
+  let buf=[];
+  window.addEventListener('keydown', e=>{
+    buf.push(e.key.toLowerCase()); buf=buf.slice(-SEQ.length);
+    if(buf.join(' ')===SEQ.join(' ')){ buf=[]; toast('↑↑↓↓←→←→BA — DEV MODE'); ghost.unlockAll(); }
+  });
+}
 
 /* ---------- address bar wiring ---------- */
 function wireChrome(){
@@ -418,6 +555,11 @@ function wireChrome(){
 /* ---------- boot ---------- */
 function boot(){
   wireChrome();
+  wireKonami();
+  // NOTE: no console banner here on purpose — NODE-01 sends players into the
+  // console, and announcing the ghost API there would spoil the whole game.
+  // The API stays available; it's revealed only by EARNING it (the codename
+  // injection prize) or the Konami code. Discovery is the reward.
   const logo=$('#logoBtn'); if(logo){ logo.style.cursor='pointer'; logo.onclick=openOverlay; }
   const gb=$('#gridBtn'); if(gb) gb.onclick=openOverlay;
   // resume at the furthest unlocked node

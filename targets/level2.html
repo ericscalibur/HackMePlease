@@ -21,7 +21,7 @@
     <!-- The server trusts whatever this form posts back. Classic mistake. -->
     <form id="form" autocomplete="off">
       <div class="field"><label>Display name</label>
-        <input class="input" name="display" value="recruit" disabled></div>
+        <input class="input" name="display" value="Jordan Avery" disabled></div>
 
       <div class="field"><label>Role</label>
         <select class="input" disabled>
@@ -63,7 +63,7 @@
     // the server reads the hidden field's CURRENT value — whatever you edited it to
     if(hidden.value.trim().toLowerCase() === 'admin'){
       out.innerHTML='';
-      GhostNet.stamp(out, 'Admin dashboard unlocked. The server believed your form.');
+      GhostNet.stamp(out, 'Access granted: Admin dashboard unlocked. Welcome, administrator.');
       GhostNet.solve(2);
     } else {
       out.innerHTML = '<div class="error">Access denied — your account tier is <b>Guest</b>. Administrator privileges are required to open the dashboard.</div>';

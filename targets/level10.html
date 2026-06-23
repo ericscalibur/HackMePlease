@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OMNICORP — Mainframe Core</title>
 <link rel="stylesheet" href="../assets/site.css">
-<!-- legacy maint endpoint (disable me!): /core/_mtc_8841 -->
 </head>
 <body>
 <div class="topbar">
@@ -23,8 +22,20 @@
   <section class="section">
     <div class="card">
       <h3 class="lock">⚠ Operator notice</h3>
-      <p>There is no public control surface here. Operators with core clearance know that the way in is never on the visible page — it's in what the page <b>leaves behind</b>.</p>
+      <p>There is no public control surface here. Operators with core clearance know that the way in is never the visible page — it's in what the page <b>runs</b>.</p>
       <p class="muted">All connection attempts to this node are logged and traced to source. Unauthorized access is a violation of OMNICORP security policy.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <h3>Core knowledge base</h3>
+      <p class="muted">Search the core document index. Restricted entries are filtered from results for non-operators.</p>
+      <div class="field" style="margin-top:12px">
+        <input class="input" id="q" type="text" placeholder="search core docs…  (try: core)" autocomplete="off">
+      </div>
+      <button class="btn btn-primary" id="go" type="button">Search</button>
+      <div id="results" style="margin-top:14px"></div>
     </div>
   </section>
 
@@ -42,8 +53,47 @@
 <script>
   GhostNet.init(10);
 
+  // The ENTIRE document index is shipped to the browser. The UI only chooses
+  // not to render the 'restricted' rows — the data is all right here.
+  var __index = [
+    { path:'/core/status',    title:'Core node status',     tag:'public' },
+    { path:'/core/telemetry', title:'Live telemetry feed',  tag:'public' },
+    { path:'/core/changelog', title:'Build 4471 changelog', tag:'public' },
+    { path:'/core/kb-dev',    title:'KB index — developer notes', tag:'public' },
+    { path:'/core/_mtc_8841', title:'Maintenance gate',     tag:'restricted' }
+  ];
+  console.log('[core-kb] document index loaded (%d entries). query it via the search box.', __index.length);
+
   // migration bootstrap — remove before GA
   var bootstrap_token = "dXNlcj1yb290X2t4O3Njb3BlPW1haW50";
+
+  // Knowledge-base search. The query is reflected straight into the results
+  // panel as raw HTML — no escaping. (Reflected XSS sink.) And note: it only
+  // ever SHOWS the public rows, but the whole __index is in your browser.
+  var q = document.getElementById('q');
+  var results = document.getElementById('results');
+  function search(){
+    var term = q.value;
+    if(!term){ results.innerHTML = ''; return; }
+    var pub = __index.filter(function(d){ return d.tag === 'public'; });
+    var restricted = __index.length - pub.length;
+    var hits = pub.filter(function(d){
+      return (d.title + ' ' + d.path).toLowerCase().indexOf(term.toLowerCase()) !== -1;
+    });
+    var html = '<div class="notice info">Results for: ' + term + '</div>';   // reflected sink
+    if(hits.length){
+      html += '<div class="feed" style="margin-top:10px">' + hits.map(function(d){
+        return '<div class="post"><div class="who mono">' + d.path + '</div><div class="body">' + d.title + '</div></div>';
+      }).join('') + '</div>';
+    } else {
+      html += '<div class="muted" style="margin-top:8px">No public documents matched.</div>';
+    }
+    html += '<div class="muted" style="font-size:12px;margin-top:10px">Showing ' + hits.length + ' of ' + pub.length +
+            ' public documents · <b>' + restricted + ' restricted entr' + (restricted === 1 ? 'y' : 'ies') + ' hidden</b>.</div>';
+    results.innerHTML = html;
+  }
+  document.getElementById('go').addEventListener('click', search);
+  q.addEventListener('keydown', function(e){ if(e.key==='Enter') search(); });
 </script>
 </body>
 </html>
